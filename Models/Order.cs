@@ -13,12 +13,12 @@ namespace HipHopPizzaandWings.Models
         public string? CustomerEmail { get; set; }
         public DateTime? OrderCreated { get; set; }
         public DateTime? OrderClosed { get; set; }
-        public List<MenuItem>? menuItem { get; set; }
+        public List<MenuItem>? MenuItems { get; set; }
         public List<PaymentType>? paymentType { get; set; }
         public List<OrderType>? Type { get; set; }
         //public List<OrderStatus>? Status { get; set; }
         public decimal Tip { get; set; }
-        public decimal totalPrice => menuItem?.Sum(i => i.Price) ?? 0;
+        public decimal totalPrice => MenuItems?.Sum(i => i.Price) ?? 0;
         public int Revenue { get; set; }
         public int ReviewScore { get; set; }
         public Order()

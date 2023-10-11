@@ -34,9 +34,9 @@ namespace HipHopPizzaandWings
 
             modelBuilder.Entity<MenuItem>().HasData(new MenuItem[]
             {
-                new MenuItem { MenuItemId = 1, menuItemName = "Pizza", Description = "Hot Chicken with Honey Drizzle", Price = 14.99m },
-                new MenuItem { MenuItemId = 2, menuItemName = "Wings", Description = "Double Fried Bone-In Flats & Drums", Price = 10.99m },
-                new MenuItem { MenuItemId = 3, menuItemName = "Cookies", Description = "Homemade Chocolate Chip Cookies", Price = 7.99m },
+                new MenuItem { MenuItemId = 1, Name = "Pizza", Description = "Hot Chicken with Honey Drizzle", Price = 14.99m },
+                new MenuItem { MenuItemId = 2, Name = "Wings", Description = "Double Fried Bone-In Flats & Drums", Price = 10.99m },
+                new MenuItem { MenuItemId = 3, Name = "Cookies", Description = "Homemade Chocolate Chip Cookies", Price = 7.99m },
             });
 
             modelBuilder.Entity<OrderStatus>().HasData(new OrderStatus[]

@@ -92,7 +92,7 @@ app.MapGet("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int 
 {
     var order = await db.Orders
     .Include(o => o.Type)
-    .Include(o => o.menuItem)
+    .Include(o => o.MenuItems)
     .Where(o => o.OrderId == orderId)
     .FirstOrDefaultAsync();
 
@@ -108,6 +108,11 @@ app.MapGet("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int 
         CustomerNumber = order.CustomerPhone,
         CustomerEmail = order.CustomerEmail,
         OrderType = order.Type?.FirstOrDefault()?.Type,
+        MenuItems = order.MenuItems.Select(menuItem => new MenuItemDTO
+        {
+            menuItemName = menuItem.Name,
+            Price = menuItem.Price,
+        }).ToList(),
     };
 
     return Results.Ok(orderDTO);
@@ -140,13 +145,13 @@ app.MapPost("/api/orders", async (HipHopPizzaandWingsDbContext db, CreateOrderDT
         // Handle menu items
         if (orderDTO.MenuItemId != null)
         {
-            order.menuItem = new List<MenuItem>();
+            order.MenuItems = new List<MenuItem>();
             foreach (var itemId in orderDTO.MenuItemId)
             {
                 var menuItem = await db.MenuItems.FindAsync(itemId);
                 if (menuItem != null)
                 {
-                    order.menuItem.Add(menuItem);
+                    order.MenuItems.Add(menuItem);
                 }
             }
         }
@@ -166,7 +171,7 @@ app.MapPost("/api/orders", async (HipHopPizzaandWingsDbContext db, CreateOrderDT
 });
 
 
-app.MapPut("/api/orders/{id}", async (HipHopPizzaandWingsDbContext db, int orderId, CreateOrderDTO updatedOrderDTO) =>
+app.MapPut("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int orderId, CreateOrderDTO updatedOrderDTO) =>
 {
     var order = await db.Orders.FindAsync(orderId);
 
@@ -198,7 +203,7 @@ app.MapPut("/api/orders/{id}", async (HipHopPizzaandWingsDbContext db, int order
     }
 });
 
-app.MapDelete("/api/orders/{id}", async (HipHopPizzaandWingsDbContext db, int orderId) =>
+app.MapDelete("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int orderId) =>
 {
     try
     {
@@ -225,7 +230,7 @@ app.MapDelete("/api/orders/{id}", async (HipHopPizzaandWingsDbContext db, int or
 
 // MENU ITEMS
 
-app.MapGet("/api/menuitems", async (HipHopPizzaandWingsDbContext db) =>
+app.MapGet("/api/menuItems", async (HipHopPizzaandWingsDbContext db) =>
 {
     var menuItems = await db.MenuItems.ToListAsync();
 
@@ -235,6 +240,69 @@ app.MapGet("/api/menuitems", async (HipHopPizzaandWingsDbContext db) =>
     }
 
     return Results.Ok(menuItems);
+});
+
+
+app.MapGet("/api/menuItems/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int menuItemId) =>
+{
+    var menuItem = await db.MenuItems.FindAsync(menuItemId);
+
+    if (menuItem == null)
+    {
+        return Results.NotFound("Menu item not found");
+    }
+
+    return Results.Ok(menuItem);
+});
+
+
+app.MapPost("api/order/{orderId}/menuItem/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int orderId, int menuItemId) =>
+{
+    var order = await db.Orders
+        .Include(o => o.MenuItems)
+        .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+    if (order == null)
+    {
+        return Results.NotFound("Order not found");
+    }
+
+    var itemToAdd = await db.MenuItems.FindAsync(menuItemId);
+
+    if (itemToAdd == null)
+    {
+        return Results.NotFound("Item not found");
+    }
+
+    order?.MenuItems?.Add(itemToAdd);
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(order);
+});
+
+
+app.MapDelete("api/orders/{orderId}/menuItems/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int orderId, int menuItemId) =>
+{
+    var order = await db.Orders
+       .Include(o => o.MenuItems)
+       .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+    if (order == null)
+    {
+        return Results.NotFound("Order not found");
+    }
+
+    var itemToRemove = db.MenuItems.Find(menuItemId);
+
+    if (itemToRemove == null)
+    {
+        return Results.NotFound("Item not found");
+    }
+
+    order.MenuItems.Remove(itemToRemove);
+    db.SaveChanges();
+    return Results.Ok(order);
 });
 app.Run();
 

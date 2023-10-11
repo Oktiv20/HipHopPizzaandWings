@@ -63,6 +63,8 @@ app.MapControllers();
 
 // ORDERS 
 
+
+// GET ALL ORDERS
 app.MapGet("/api/orders", async (HipHopPizzaandWingsDbContext db) =>
 {
     var orders = await db.Orders
@@ -87,7 +89,7 @@ app.MapGet("/api/orders", async (HipHopPizzaandWingsDbContext db) =>
 });
 
 
-
+// GET SINGLE ORDER
 app.MapGet("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int orderId) =>
 {
     var order = await db.Orders
@@ -119,7 +121,7 @@ app.MapGet("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int 
 });
 
 
-
+// CREATE ORDER
 app.MapPost("/api/orders", async (HipHopPizzaandWingsDbContext db, CreateOrderDTO orderDTO) =>
 {
     try
@@ -171,6 +173,7 @@ app.MapPost("/api/orders", async (HipHopPizzaandWingsDbContext db, CreateOrderDT
 });
 
 
+// EDIT ORDER BY ID
 app.MapPut("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int orderId, CreateOrderDTO updatedOrderDTO) =>
 {
     var order = await db.Orders.FindAsync(orderId);
@@ -203,6 +206,8 @@ app.MapPut("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int 
     }
 });
 
+
+// DELETE ORDER BY ID
 app.MapDelete("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, int orderId) =>
 {
     try
@@ -228,8 +233,11 @@ app.MapDelete("/api/orders/{orderId}", async (HipHopPizzaandWingsDbContext db, i
 });
 
 
+
 // MENU ITEMS
 
+
+// GET MENU ITEMS
 app.MapGet("/api/menuItems", async (HipHopPizzaandWingsDbContext db) =>
 {
     var menuItems = await db.MenuItems.ToListAsync();
@@ -243,6 +251,7 @@ app.MapGet("/api/menuItems", async (HipHopPizzaandWingsDbContext db) =>
 });
 
 
+// GET SINGLE MENU ITEM
 app.MapGet("/api/menuItems/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int menuItemId) =>
 {
     var menuItem = await db.MenuItems.FindAsync(menuItemId);
@@ -256,7 +265,8 @@ app.MapGet("/api/menuItems/{menuItemId}", async (HipHopPizzaandWingsDbContext db
 });
 
 
-app.MapPost("api/order/{orderId}/menuItem/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int orderId, int menuItemId) =>
+// ADD MENU ITEM TO ORDER
+app.MapPost("/api/order/{orderId}/menuItem/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int orderId, int menuItemId) =>
 {
     var order = await db.Orders
         .Include(o => o.MenuItems)
@@ -282,7 +292,26 @@ app.MapPost("api/order/{orderId}/menuItem/{menuItemId}", async (HipHopPizzaandWi
 });
 
 
-app.MapDelete("api/orders/{orderId}/menuItems/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int orderId, int menuItemId) =>
+// EDIT MENU ITEM
+app.MapPut("/api/menuItem/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int menuItemId, MenuItem menuItem) =>
+{
+    var itemToUpdate = await db.MenuItems.FirstOrDefaultAsync(i => i.MenuItemId == menuItemId);
+    if (itemToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+
+    itemToUpdate.Name = menuItem.Name;
+    itemToUpdate.Description = menuItem.Description;
+    itemToUpdate.Price = menuItem.Price;
+
+    db.SaveChanges();
+    return Results.Ok(itemToUpdate);
+});
+
+
+// REMOVE MENU ITEM FROM ORDER
+app.MapDelete("/api/orders/{orderId}/menuItems/{menuItemId}", async (HipHopPizzaandWingsDbContext db, int orderId, int menuItemId) =>
 {
     var order = await db.Orders
        .Include(o => o.MenuItems)
@@ -303,6 +332,62 @@ app.MapDelete("api/orders/{orderId}/menuItems/{menuItemId}", async (HipHopPizzaa
     order.MenuItems.Remove(itemToRemove);
     db.SaveChanges();
     return Results.Ok(order);
+});
+
+
+
+// PAYMENT TYPES
+
+
+// GET PAYMENT TYPES
+app.MapGet("/api/paymentType", async (HipHopPizzaandWingsDbContext db) =>
+{
+    var paymentTypes = await db.PaymentTypes.ToListAsync();
+
+    if (paymentTypes == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(paymentTypes);
+});
+
+
+// ADD A PAYMENT TYPE
+app.MapPost("/api/paymentType", async (HipHopPizzaandWingsDbContext db, PaymentType newPaymentType) =>
+{
+    // Check if the provided newPaymentType is valid
+    if (newPaymentType == null)
+    {
+        return Results.BadRequest("Invalid data provided.");
+    }
+
+    // Add the new payment type to the database
+    db.PaymentTypes.Add(newPaymentType);
+    await db.SaveChangesAsync();
+
+    // Return a "Created" response with the newly created payment type
+    return Results.Created($"/api/paymentType/{newPaymentType.PaymentTypeId}", newPaymentType);
+});
+
+
+// DELETE A PAYMENT TYPE
+app.MapDelete("/api/paymentType/{paymentTypeId}", async (HipHopPizzaandWingsDbContext db, int paymentTypeId) =>
+{
+    // Find the payment type by its ID
+    var paymentType = await db.PaymentTypes.FindAsync(paymentTypeId);
+
+    if (paymentType == null)
+    {
+        return Results.NotFound("Payment type not found");
+    }
+
+    // Remove the payment type from the database
+    db.PaymentTypes.Remove(paymentType);
+    await db.SaveChangesAsync();
+
+    // Return a "No Content" response to indicate successful deletion
+    return Results.NoContent();
 });
 app.Run();
 

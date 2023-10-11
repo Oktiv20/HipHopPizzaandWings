@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using HipHopPizzaandWings.Models;
+﻿using HipHopPizzaandWings.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HipHopPizzaandWings
 {
@@ -11,10 +11,10 @@ namespace HipHopPizzaandWings
         public DbSet<MenuItem>? MenuItems { get; set; }
         public DbSet<PaymentType>? PaymentTypes { get; set; }
 
-    public HipHopPizzaandWingsDbContext(DbContextOptions<HipHopPizzaandWingsDbContext> context) : base(context) { }
+        public HipHopPizzaandWingsDbContext(DbContextOptions<HipHopPizzaandWingsDbContext> context) : base(context) { }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<Employee>().HasData(new Employee[]
             {
                 new Employee { EmployeeId = 1, employeeName = "Kyle Blunt", employeeEmail = "kblunt@kb.com", employeePassword = "1234", isEmployee = true }
@@ -25,7 +25,7 @@ namespace HipHopPizzaandWings
                 new OrderType { OrderTypeId = 1, Type = "Walk In" },
                 new OrderType { OrderTypeId = 2, Type = "Call In" },
             });
-            
+
             modelBuilder.Entity<PaymentType>().HasData(new PaymentType[]
             {
                 new PaymentType { PaymentTypeId = 1, paymentType = "Cash" },
@@ -47,11 +47,11 @@ namespace HipHopPizzaandWings
 
             modelBuilder.Entity<Order>().HasData(new Order[]
             {
-                new Order 
+                new Order
                 {
                     OrderId = 1,
                     EmployeeId = 1,
-                    OrderCreated = DateTime.Now,
+                    OrderCreated = DateTime.Now.AddHours(-3),
                     Tip = 2.00m,
                     CustomerName = "Pizz Hut",
                     CustomerEmail = "thehut@pizza.com",
@@ -59,18 +59,18 @@ namespace HipHopPizzaandWings
                     ReviewScore = 3,
                 },
 
-                new Order 
+                new Order
                 {
                     OrderId = 2,
                     EmployeeId = 1,
-                    OrderCreated = DateTime.Now,
+                    OrderCreated = DateTime.Now.AddHours(-1),
                     Tip = 5.00m,
                     CustomerName = "Meg Lee",
                     CustomerEmail = "ml@ml.com",
                     CustomerPhone = "281-330-8004",
                     ReviewScore = 5,
                 },
-                
+
             });
         }
     }

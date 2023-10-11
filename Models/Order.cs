@@ -7,21 +7,23 @@ namespace HipHopPizzaandWings.Models
         [Key]
         public int OrderId { get; set; }
         public int EmployeeId { get; set; }
-        public Employee employee { get; set; }
+        public Employee Employee { get; set; }
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public string? CustomerEmail { get; set; }
-        public DateTime OrderCreated { get; set; }
+        public DateTime? OrderCreated { get; set; }
+        public DateTime? OrderClosed { get; set; }
         public List<MenuItem>? menuItem { get; set; }
         public List<PaymentType>? paymentType { get; set; }
         public List<OrderType>? Type { get; set; }
-        public List<OrderStatus>? Status { get; set; }
+        //public List<OrderStatus>? Status { get; set; }
         public decimal Tip { get; set; }
-        public decimal totalPrice => menuItem.Sum(i => i.Price);
+        public decimal totalPrice => menuItem?.Sum(i => i.Price) ?? 0;
         public int Revenue { get; set; }
         public int ReviewScore { get; set; }
-        public Order() { 
-           this.OrderCreated = DateTime.Now;
+        public Order()
+        {
+            this.OrderCreated = DateTime.Now;
         }
 
     }
